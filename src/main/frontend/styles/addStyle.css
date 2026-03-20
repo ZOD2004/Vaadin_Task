@@ -1,0 +1,10 @@
+.border-textField::part(input-field) {
+    border: 2px solid #0077b6;
+    border-radius: 8px;
+}
+
+vaadin-text-field::part(input-field) {
+    border: 2px solid #0077b6;
+    border-radius: 8px;
+    background-color: #f0f9ff;
+}
