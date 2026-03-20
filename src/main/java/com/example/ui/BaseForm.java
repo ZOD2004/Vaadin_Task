@@ -1,36 +1,22 @@
 package com.example.ui;
 
-import com.example.anno.AddBorder;
-import com.vaadin.flow.component.Component;
+import com.example.anno.AddBorderImple;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import java.lang.reflect.Field;
+import com.vaadin.flow.component.AttachEvent;
 
-public class BaseForm extends FormLayout {
+public abstract class BaseForm extends FormLayout {
 
-    public BaseForm() {
-        applyAnnotationStyles();
-    }
+    private boolean initialized = false;
 
-    protected void applyAnnotationStyles() {
-        try {
-            Class<?> objClass = this.getClass();
-            Field[] fields = objClass.getDeclaredFields();
-
-            for (Field field : fields) {
-                if (field.isAnnotationPresent(AddBorder.class)) {
-                    field.setAccessible(true);
-                    Object val = field.get(this);
-                    System.out.println("Field: " + field.getName() + " Value: " + val);
-
-                    if (val instanceof Component component) {
-                        component.addClassName("border-textField");
-                        // AddBorder anno = field.getAnnotation(AddBorder.class);
-                        // component.getStyle().set("border", anno.width() + " " + anno.type() + " " + anno.color());
-                    }
-                }
-            }
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Failed to apply styles via reflection", e);
+    @Override
+    public void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        if(!initialized){
+            new AddBorderImple().apply(this);
         }
     }
+
+//    public void applyAnnotationStyles() {
+//        new AddBorderImple().apply(this);
+//    }
 }

@@ -26,6 +26,9 @@ public class ProductForm extends BaseForm {
     NumberField stockField = new NumberField("stockQuantity");
     RadioButtonGroup<Boolean> inStockField = new RadioButtonGroup<>();
 
+    @AddBorder
+    TextField textField = new TextField("Example");
+
     private final Binder<ProductCatalogItem> binder;
 //    AddBorderImple addBorderImple;
 
@@ -41,7 +44,7 @@ public class ProductForm extends BaseForm {
         add(name, desc, categoryField, brandField, priceField, stockField, inStockField);
 
         // can I call this?
-        this.applyAnnotationStyles();
+//        this.applyAnnotationStyles();
 
         binder = new Binder<>();
 
