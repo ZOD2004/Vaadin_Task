@@ -4,12 +4,16 @@ import com.example.anno.AddLog;
 import com.example.anno.AddLogImple;
 import com.example.entity.ProductCatalogItem;
 import com.example.repo.ProductRepository;
+import com.example.service.ProductService;
 import com.vaadin.flow.component.grid.ColumnTextAlign;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.provider.CallbackDataProvider;
+import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
+import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -22,16 +26,19 @@ import java.util.List;
 @Route("products")
 @PageTitle("ProductGrid")
 public class ProductGrid  extends HorizontalLayout {
+    private ConfigurableFilterDataProvider<ProductCatalogItem, Void, String> filterDataProvider;
     private final ProductRepository productRepository;
     Grid<ProductCatalogItem> grid = new Grid<ProductCatalogItem>();
     TextField searchField = new TextField();
 
     AddLogImple addLogImple;
     ProductDrawerForm productDrawerForm;
+    ProductService productService;
 
-    public ProductGrid(ProductRepository productRepository){
+    public ProductGrid(ProductRepository productRepository,ProductService productService){
         addLogImple = new AddLogImple();
         this.productRepository = productRepository;
+        this.productService = productService;
         this.setSizeFull();
         setSpacing(false);
         createGridBox();
@@ -52,6 +59,7 @@ public class ProductGrid  extends HorizontalLayout {
     private void createGridBox() {
 
         grid.setSizeFull();
+        grid.setAllRowsVisible(true);
 
         grid.addColumn(ProductCatalogItem::getName)
                 .setHeader("Name")
@@ -76,6 +84,19 @@ public class ProductGrid  extends HorizontalLayout {
             productDrawerForm.setProductDetails(productDetails);
         });
 
+        CallbackDataProvider<ProductCatalogItem, String> dataProvider = DataProvider.fromFilteringCallbacks(
+                query -> {
+                    String filter = query.getFilter().orElse("");
+                    return productService.fetch(query.getOffset(), query.getLimit(), filter).stream();
+                },
+                query -> {
+                    String filter = query.getFilter().orElse("");
+                    return productService.count(filter);
+                }
+        );
+
+        filterDataProvider = dataProvider.withConfigurableFilter();
+        grid.setDataProvider(filterDataProvider);
         //search logic
 //        Pageable pageable = PageRequest.of(1,2);
 //        grid.setItemsPageable(pageable -> productRepository
@@ -112,9 +133,15 @@ public class ProductGrid  extends HorizontalLayout {
         searchField.setPlaceholder("Search");
         searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
 
-        searchField.addValueChangeListener(e ->
-                grid.getDataProvider().refreshAll());
         searchField.setValueChangeMode(ValueChangeMode.LAZY);
+
+//        searchField.addValueChangeListener(e ->
+//                grid.getDataProvider().refreshAll());
+
+        searchField.addValueChangeListener(e -> {
+            filterDataProvider.setFilter(e.getValue());
+        });
+
     }
 
     @AddLog
@@ -126,5 +153,9 @@ public class ProductGrid  extends HorizontalLayout {
     private ProductCatalogItem check2(){
         return new ProductCatalogItem();
     }
+
+
+
+
 
 }

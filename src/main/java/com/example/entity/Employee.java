@@ -1,5 +1,7 @@
 package com.example.entity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,10 +11,11 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
+@Entity
 public class Employee {
-    Integer employee_id;
-    String first_name;
-    String last_name;
+    @Id
+    Integer employeeId;
+    String name;
     String email;
     Integer department_id;
     LocalDate hire_date;
