@@ -1,17 +1,22 @@
 package com.example.ui;
 
+import com.example.anno.AddBorder;
+import com.example.anno.AddBorderImple;
 import com.example.entity.Employee;
 import com.example.service.EmployeeService;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.IntegerField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.data.domain.Page;
@@ -22,8 +27,16 @@ import java.util.List;
 @Route("employees")
 @PageTitle("EmployeeGrid")
 public class EmployeeGrid extends VerticalLayout {
+    private boolean initialized = false;
+    @Override
+    public void onAttach(AttachEvent attachEvent){
+        super.onAttach(attachEvent);
+        if(!initialized){
+            new AddBorderImple().apply(this);
+            initialized = true;
+        }
+    }
 
-    private ConfigurableFilterDataProvider<Employee,Void,String> filterDataProvider;
 
     private Button prev = new Button("Prev");
     private Button next = new Button("Next");
@@ -35,6 +48,8 @@ public class EmployeeGrid extends VerticalLayout {
 
     TextField searchField = new TextField();
     String searchFilter="";
+    @AddBorder
+    IntegerField recordToShowField = new IntegerField();
 
     EmployeeService employeeService;
     Grid<Employee>grid = new Grid<>();
@@ -46,9 +61,24 @@ public class EmployeeGrid extends VerticalLayout {
         createEmployeeGrid();
         buttonEvents();
         createSearchField();
-        add(searchField,grid,new HorizontalLayout(prev, pageInfo, next));
+        createRecordToShowField();
+        add(new HorizontalLayout(searchField,recordToShowField),grid,new HorizontalLayout(prev, pageInfo, next));
 
         loadData();
+    }
+
+    private void createRecordToShowField() {
+        recordToShowField.setPlaceholder("No. Record to show");
+        recordToShowField.setMin(1);
+        recordToShowField.getStyle().setAlignItems(Style.AlignItems.END);
+        recordToShowField.setValueChangeMode(ValueChangeMode.LAZY);
+        recordToShowField.addValueChangeListener(e->{
+                    if (e.getValue() != null) {
+                        pageSize = e.getValue();
+                        loadData();
+                    }
+                }
+        );
     }
 
     private void createSearchField() {

@@ -13,6 +13,7 @@ public abstract class BaseForm extends FormLayout {
         super.onAttach(attachEvent);
         if(!initialized){
             new AddBorderImple().apply(this);
+            initialized = true;
         }
     }
 
