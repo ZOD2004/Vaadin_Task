@@ -5,10 +5,13 @@ import com.example.service.EmployeeService;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
+import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.data.domain.Page;
@@ -27,8 +30,11 @@ public class EmployeeGrid extends VerticalLayout {
     private Span pageInfo = new Span();
 
     private int currentPage = 0;
-    private int pageSize = 5;
+    private int pageSize = 6;
     private int totalPages = 1;
+
+    TextField searchField = new TextField();
+    String searchFilter="";
 
     EmployeeService employeeService;
     Grid<Employee>grid = new Grid<>();
@@ -39,9 +45,23 @@ public class EmployeeGrid extends VerticalLayout {
 
         createEmployeeGrid();
         buttonEvents();
-        add(grid,new HorizontalLayout(prev, pageInfo, next));
+        createSearchField();
+        add(searchField,grid,new HorizontalLayout(prev, pageInfo, next));
 
         loadData();
+    }
+
+    private void createSearchField() {
+        searchField.setPlaceholder("Search");
+        searchField.setPrefixComponent(VaadinIcon.SEARCH.create());
+        searchField.setValueChangeMode(ValueChangeMode.LAZY);
+
+        searchField.addValueChangeListener(e->{
+            searchFilter = e.getValue();
+            currentPage = 0;
+            loadData();
+        });
+
     }
 
     private void buttonEvents() {
@@ -61,7 +81,7 @@ public class EmployeeGrid extends VerticalLayout {
     }
 
     private void loadData(){
-        Page<Employee> page = employeeService.pagedEmployeeList(currentPage, pageSize);
+        Page<Employee> page = employeeService.pagedEmployeeList(currentPage, pageSize,searchFilter);
         grid.setItems(page.getContent());
         totalPages = page.getTotalPages();
         pageInfo.setText("Page " + (currentPage+1)+" of "+totalPages);

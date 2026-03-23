@@ -21,16 +21,11 @@ public class EmployeeService {
     @Autowired
     private EmployeeRepository employeeRepository;
     private final RestClient restClient;
-    List<Employee> allEmployees;
 
     public EmployeeService(@Value("${api.base-url}") String baseUrl) {
         this.restClient = RestClient.builder()
                 .baseUrl(baseUrl)
                 .build();
-
-        if(allEmployees == null || allEmployees.isEmpty()){
-            allEmployees = fetchAllEmployee();
-        }
     }
 
     public List<Employee> fetchAllEmployee() {
@@ -58,16 +53,14 @@ public class EmployeeService {
         }
     }
 
-//    public Page<Employee> pagedEmployeeList(int currentPage, int pageSize) {
-//        Pageable pageable = PageRequest.of(currentPage, pageSize);
-//        return
-//    }
-    public Page<Employee> pagedEmployeeList(int currentPage, int pageSize) {
+
+    public Page<Employee> pagedEmployeeList(int currentPage, int pageSize,String filter) {
         Pageable pageable = PageRequest.of(currentPage, pageSize);
 
-        int start = (int) pageable.getOffset();
-        int end =start+pageable.getPageSize();
-        List<Employee> pageContent = allEmployees.subList(start, end);
-        return new PageImpl<>(pageContent, pageable, allEmployees.size());
+        if (filter == null || filter.isBlank()) {
+            return employeeRepository.findAll(pageable);
+        } else {
+            return employeeRepository.findByNameContainingIgnoreCase(filter, pageable);
+        }
     }
 }
